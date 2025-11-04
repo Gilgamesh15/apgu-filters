@@ -1,0 +1,16 @@
+{
+  "name": "apgu-filters-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "build:core": "npm run build -w packages/apgu-filters",
+    "build:cli": "npm run build -w packages/cli",
+    "dev:core": "npm run dev -w packages/apgu-filters",
+    "dev:cli": "npm run dev -w packages/cli"
+  }
+}
