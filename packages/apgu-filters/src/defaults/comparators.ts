@@ -1,10 +1,10 @@
-import {
-  Comparable,
-  Comparator,
-  Ordered,
-  StringLike,
-  Numeric
-} from "../lib/types";
+import { Comparable, Comparator, Ordered, StringLike } from "../lib/types";
+
+export const WeakEquals: Comparator<Comparable, Comparable> = {
+  id: "weak-equals",
+  label: "Equals (loose)",
+  evaluate: ({ filterValue, rowValue }) => rowValue == filterValue
+};
 
 export const Equals: Comparator<Comparable, Comparable> = {
   id: "equals",
@@ -12,207 +12,300 @@ export const Equals: Comparator<Comparable, Comparable> = {
   evaluate: ({ filterValue, rowValue }) => rowValue === filterValue
 };
 
-export const Matches: Comparator<string, RegExp> = {
-  id: "matches",
-  label: "Matches",
-  evaluate: ({ filterValue, rowValue }) => {
-    if (typeof filterValue === "string") {
-      const regex = new RegExp(filterValue, "i");
-      return regex.test(rowValue);
-    }
-    return false;
-  }
+export const NotWeakEquals: Comparator<Comparable, Comparable> = {
+  id: "not-weak-equals",
+  label: "Not equals (loose)",
+  evaluate: ({ filterValue, rowValue }) => rowValue != filterValue
 };
 
 export const NotEquals: Comparator<Comparable, Comparable> = {
-  id: "notEquals",
-  label: "Not Equals",
+  id: "not-equals",
+  label: "Not equals",
   evaluate: ({ filterValue, rowValue }) => rowValue !== filterValue
 };
 
-export const IsOneOf: Comparator<Comparable, Comparable[]> = {
-  id: "isOneOf",
-  label: "Is One Of",
-  evaluate: ({ filterValue, rowValue }) => filterValue.includes(rowValue)
-};
-
-export const IsNoneOf: Comparator<Comparable, Comparable[]> = {
-  id: "isNoneOf",
-  label: "Is None Of",
-  evaluate: ({ filterValue, rowValue }) => !filterValue.includes(rowValue)
-};
-
-// ============================================================================
-// Ordering & Range Comparators
-// ============================================================================
-
-export const GreaterThan: Comparator<Ordered, Ordered> = {
-  id: "greaterThan",
-  label: "Greater Than",
-  evaluate: ({ filterValue, rowValue }) => rowValue > filterValue
-};
-
-export const GreaterOrEqual: Comparator<Ordered, Ordered> = {
-  id: "greaterOrEqual",
-  label: "Greater or Equal",
+export const GreaterThanOrEqual: Comparator<Ordered, Ordered> = {
+  id: "greater-than-or-equal",
+  label: "Greater than or equal to",
   evaluate: ({ filterValue, rowValue }) => rowValue >= filterValue
 };
 
-export const LessThan: Comparator<Ordered, Ordered> = {
-  id: "lessThan",
-  label: "Less Than",
-  evaluate: ({ filterValue, rowValue }) => rowValue < filterValue
-};
-
-export const LessOrEqual: Comparator<Ordered, Ordered> = {
-  id: "lessOrEqual",
-  label: "Less or Equal",
+export const LessThanOrEqual: Comparator<Ordered, Ordered> = {
+  id: "less-than-or-equal",
+  label: "Less than or equal to",
   evaluate: ({ filterValue, rowValue }) => rowValue <= filterValue
 };
 
-export const Between: Comparator<Ordered, { min: Ordered; max: Ordered }> = {
-  id: "between",
-  label: "Between",
+export const GreaterThan: Comparator<Ordered, Ordered> = {
+  id: "greater-than",
+  label: "Greater than",
+  evaluate: ({ filterValue, rowValue }) => rowValue > filterValue
+};
+
+export const LessThan: Comparator<Ordered, Ordered> = {
+  id: "less-than",
+  label: "Less than",
+  evaluate: ({ filterValue, rowValue }) => rowValue < filterValue
+};
+
+export const Includes: Comparator<Comparable, Comparable[]> = {
+  id: "includes",
+  label: "Is one of",
+  evaluate: ({ filterValue, rowValue }) => filterValue.includes(rowValue)
+};
+
+export const IncludesAll: Comparator<Comparable[], Comparable[]> = {
+  id: "includes-all",
+  label: "Contains all of",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.every((item) => rowValue.includes(item))
+};
+
+export const NotIncludesAll: Comparator<Comparable[], Comparable[]> = {
+  id: "not-includes-all",
+  label: "Does not contain all of",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.every((item) => rowValue.includes(item))
+};
+
+export const NotIncludes: Comparator<Comparable, Comparable[]> = {
+  id: "not-includes",
+  label: "Is none of",
+  evaluate: ({ filterValue, rowValue }) => !filterValue.includes(rowValue)
+};
+
+export const IncludesAny: Comparator<Comparable[], Comparable[]> = {
+  id: "includes-any",
+  label: "Contains any of",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.some((val) => rowValue.includes(val))
+};
+
+export const NotIncludesAny: Comparator<Comparable[], Comparable[]> = {
+  id: "not-includes-any",
+  label: "Contains none of",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.some((val) => rowValue.includes(val))
+};
+
+export const InRangeInclusive: Comparator<
+  Ordered,
+  { min: Ordered; max: Ordered }
+> = {
+  id: "in-range-inclusive",
+  label: "Between (inclusive)",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue >= filterValue.min && rowValue <= filterValue.max
 };
 
-export const BetweenExclusive: Comparator<
+export const InRangeExclusive: Comparator<
   Ordered,
   { min: Ordered; max: Ordered }
 > = {
-  id: "betweenExclusive",
-  label: "Between (Exclusive)",
+  id: "in-range-exclusive",
+  label: "Between (exclusive)",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue > filterValue.min && rowValue < filterValue.max
 };
 
-export const Outside: Comparator<Ordered, { min: Ordered; max: Ordered }> = {
-  id: "outside",
-  label: "Outside",
+export const NotInRangeInclusive: Comparator<
+  Ordered,
+  { min: Ordered; max: Ordered }
+> = {
+  id: "not-in-range-inclusive",
+  label: "Outside of (inclusive)",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue < filterValue.min || rowValue > filterValue.max
 };
 
-const OutsideExclusive: Comparator<Ordered, { min: Ordered; max: Ordered }> = {
-  id: "outsideExclusive",
-  label: "Outside (Exclusive)",
+export const NotInRangeExclusive: Comparator<
+  Ordered,
+  { min: Ordered; max: Ordered }
+> = {
+  id: "not-in-range-exclusive",
+  label: "Outside of (exclusive)",
   evaluate: ({ filterValue, rowValue }) =>
-    rowValue < filterValue.min || rowValue > filterValue.max
+    rowValue <= filterValue.min || rowValue >= filterValue.max
 };
 
-// ============================================================================
-// String Comparators
-// ============================================================================
+export const InAnyRangesInclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "in-any-ranges-inclusive",
+  label: "In any range (inclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.some((range) => rowValue >= range[0] && rowValue <= range[1])
+};
 
-export const StartsWith: Comparator<StringLike, string> = {
-  id: "startsWith",
-  label: "Starts With",
+export const InAnyRangesExclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "in-any-ranges-exclusive",
+  label: "In any range (exclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.some((range) => rowValue > range[0] && rowValue < range[1])
+};
+
+export const NotInAnyRangesInclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "not-in-any-ranges-inclusive",
+  label: "Not in any range (inclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.some((range) => rowValue >= range[0] && rowValue <= range[1])
+};
+
+export const NotInAnyRangesExclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "not-in-any-ranges-exclusive",
+  label: "Not in any range (exclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.some((range) => rowValue > range[0] && rowValue < range[1])
+};
+
+export const InAllRangesInclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "in-all-ranges-inclusive",
+  label: "In all ranges (inclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.every((range) => rowValue >= range[0] && rowValue <= range[1])
+};
+
+export const InAllRangesExclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "in-all-ranges-exclusive",
+  label: "In all ranges (exclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    filterValue.every((range) => rowValue > range[0] && rowValue < range[1])
+};
+
+export const NotInAllRangesInclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "not-in-all-ranges-inclusive",
+  label: "Not in all ranges (inclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.every((range) => rowValue >= range[0] && rowValue <= range[1])
+};
+
+export const NotInAllRangesExclusive: Comparator<
+  Ordered,
+  [min: Ordered, max: Ordered][]
+> = {
+  id: "not-in-all-ranges-exclusive",
+  label: "Not in all ranges (exclusive)",
+  evaluate: ({ filterValue, rowValue }) =>
+    !filterValue.every((range) => rowValue > range[0] && rowValue < range[1])
+};
+
+export const StartsWithCaseInsensitive: Comparator<StringLike, string> = {
+  id: "starts-with-case-insensitive",
+  label: "Starts with",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue.toLowerCase().startsWith(filterValue.toLowerCase())
 };
 
-export const EndsWith: Comparator<StringLike, string> = {
-  id: "endsWith",
-  label: "Ends With",
+export const NotStartsWithCaseInsensitive: Comparator<StringLike, string> = {
+  id: "not-starts-with-case-insensitive",
+  label: "Does not start with",
+  evaluate: ({ filterValue, rowValue }) =>
+    !rowValue.toLowerCase().startsWith(filterValue.toLowerCase())
+};
+
+export const StartsWithCaseSensitive: Comparator<StringLike, string> = {
+  id: "starts-with-case-sensitive",
+  label: "Starts with (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => rowValue.startsWith(filterValue)
+};
+
+export const NotStartsWithCaseSensitive: Comparator<StringLike, string> = {
+  id: "not-starts-with-case-sensitive",
+  label: "Does not start with (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => !rowValue.startsWith(filterValue)
+};
+
+export const EndsWithCaseInsensitive: Comparator<StringLike, string> = {
+  id: "ends-with-case-insensitive",
+  label: "Ends with",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue.toLowerCase().endsWith(filterValue.toLowerCase())
 };
 
-export const Contains: Comparator<StringLike, string> = {
-  id: "contains",
+export const NotEndsWithCaseInsensitive: Comparator<StringLike, string> = {
+  id: "not-ends-with-case-insensitive",
+  label: "Does not end with",
+  evaluate: ({ filterValue, rowValue }) =>
+    !rowValue.toLowerCase().endsWith(filterValue.toLowerCase())
+};
+
+export const EndsWithCaseSensitive: Comparator<StringLike, string> = {
+  id: "ends-with-case-sensitive",
+  label: "Ends with (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => rowValue.endsWith(filterValue)
+};
+
+export const NotEndsWithCaseSensitive: Comparator<StringLike, string> = {
+  id: "not-ends-with-case-sensitive",
+  label: "Does not end with (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => !rowValue.endsWith(filterValue)
+};
+
+export const ContainsCaseSensitive: Comparator<StringLike, string> = {
+  id: "contains-case-sensitive",
+  label: "Contains (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => rowValue.includes(filterValue)
+};
+
+export const NotContainsCaseSensitive: Comparator<StringLike, string> = {
+  id: "not-contains-case-sensitive",
+  label: "Does not contain (case sensitive)",
+  evaluate: ({ filterValue, rowValue }) => !rowValue.includes(filterValue)
+};
+
+export const ContainsCaseInsensitive: Comparator<StringLike, string> = {
+  id: "contains-case-insensitive",
   label: "Contains",
   evaluate: ({ filterValue, rowValue }) =>
     rowValue.toLowerCase().includes(filterValue.toLowerCase())
 };
 
-export const NotContains: Comparator<StringLike, string> = {
-  id: "notContains",
-  label: "Does Not Contain",
+export const NotContainsCaseInsensitive: Comparator<StringLike, string> = {
+  id: "not-contains-case-insensitive",
+  label: "Does not contain",
   evaluate: ({ filterValue, rowValue }) =>
     !rowValue.toLowerCase().includes(filterValue.toLowerCase())
 };
 
-// ============================================================================
-// Numeric Comparators
-// ============================================================================
-
-export const IsWithinTolerance: Comparator<
-  Numeric,
-  { target: number; tolerance: number }
-> = {
-  id: "isWithinTolerance",
-  label: "Within Tolerance",
-  evaluate: ({ filterValue, rowValue }) =>
-    Math.abs(rowValue - filterValue.target) <= filterValue.tolerance
+const Matches: Comparator<StringLike, RegExp> = {
+  id: "matches",
+  label: "Matches regex",
+  evaluate: ({ filterValue, rowValue }) => filterValue.test(rowValue)
 };
 
-// ============================================================================
-// Date Comparators
-// ============================================================================
-
-export const IsBefore: Comparator<Date, Date> = {
-  id: "isBefore",
-  label: "Is Before",
-  evaluate: ({ filterValue, rowValue }) => rowValue < filterValue
+const NotMatches: Comparator<StringLike, RegExp> = {
+  id: "not-matches",
+  label: "Does not match regex",
+  evaluate: ({ filterValue, rowValue }) => !filterValue.test(rowValue)
 };
 
-export const IsAfter: Comparator<Date, Date> = {
-  id: "isAfter",
-  label: "Is After",
-  evaluate: ({ filterValue, rowValue }) => rowValue > filterValue
+export const IsTrue: Comparator<boolean, never> = {
+  id: "is-true",
+  label: "Is true",
+  evaluate: ({ rowValue }) => rowValue === true
 };
 
-export const IsOnOrBefore: Comparator<Date, Date> = {
-  id: "isOnOrBefore",
-  label: "Is On or Before",
-  evaluate: ({ filterValue, rowValue }) => rowValue <= filterValue
-};
-
-export const IsOnOrAfter: Comparator<Date, Date> = {
-  id: "isOnOrAfter",
-  label: "Is On or After",
-  evaluate: ({ filterValue, rowValue }) => rowValue >= filterValue
-};
-
-export const IsWithinDays: Comparator<Date, number> = {
-  id: "isWithinDays",
-  label: "Within Days",
-  evaluate: ({ filterValue, rowValue }) => {
-    const diff = Math.abs(rowValue.getTime() - new Date().getTime());
-    const days = diff / (1000 * 60 * 60 * 24);
-    return days <= filterValue;
-  }
-};
-
-// ============================================================================
-// Array Comparators
-// ============================================================================
-
-export const ArrayContainsAny: Comparator<any[], any[]> = {
-  id: "arrayContainsAny",
-  label: "Array Contains Any",
-  evaluate: ({ filterValue, rowValue }) =>
-    filterValue.some((val) => rowValue.includes(val))
-};
-
-export const ArrayNotContainsAny: Comparator<any[], any[]> = {
-  id: "arrayNotContainsAny",
-  label: "Array Not Contains Any",
-  evaluate: ({ filterValue, rowValue }) =>
-    filterValue.every((val) => !rowValue.includes(val))
-};
-
-export const ArrayContainsAll: Comparator<any[], any[]> = {
-  id: "arrayContainsAll",
-  label: "Array Contains All",
-  evaluate: ({ filterValue, rowValue }) =>
-    filterValue.every((val) => rowValue.includes(val))
-};
-
-export const ArrayNotContainsAll: Comparator<any[], any[]> = {
-  id: "arrayNotContainsAll",
-  label: "Array Not Contains All",
-  evaluate: ({ filterValue, rowValue }) =>
-    filterValue.every((val) => !rowValue.includes(val))
+export const IsFalse: Comparator<boolean, never> = {
+  id: "is-false",
+  label: "Is false",
+  evaluate: ({ rowValue }) => rowValue === false
 };

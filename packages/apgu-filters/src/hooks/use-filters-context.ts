@@ -1,7 +1,9 @@
 import React from "react";
 import { FiltersContext, FiltersContextType } from "../filters-context";
 
-export const useFiltersContext = <TRowType>(): FiltersContextType<TRowType> => {
+export const useFiltersContext = <
+  TRowType extends object = any
+>(): FiltersContextType<TRowType> => {
   const context = React.useContext(FiltersContext);
   if (!context) {
     throw new Error("useFiltersContext must be used within a FiltersProvider");

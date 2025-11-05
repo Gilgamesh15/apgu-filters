@@ -1,15 +1,15 @@
 import React from "react";
 import { FiltersContext } from "./filters-context";
-import { FilterExpression, PredicateInstance } from "./lib/types";
+import { FilterExpression, PredicateInstances } from "./lib/types";
 
-export interface FiltersProviderProps<TRowType = any> {
+export interface FiltersProviderProps<TRowType extends object = any> {
   children: React.ReactNode;
   values?: TRowType[];
-  predicates: PredicateInstance<TRowType>[];
+  predicates: PredicateInstances<TRowType>;
   defaultFilterExpression?: FilterExpression;
 }
 
-export const FiltersProvider = <TRowType,>({
+export const FiltersProvider = <TRowType extends object = any>({
   children,
   values = [],
   predicates,
@@ -108,12 +108,12 @@ export const FiltersProvider = <TRowType,>({
         if (!predicate) return true;
 
         const comparatorDef = predicate.def.comparators.find(
-          (c) => c.id === rule.comparator
+          (c: any) => c.id === rule.comparator
         );
 
         if (!comparatorDef) return true;
 
-        const rowValue = row[rule.field as keyof TRowType] as TRowType;
+        const rowValue = row[rule.field as keyof TRowType];
 
         return comparatorDef.evaluate({
           filterValue: rule.value,
@@ -129,6 +129,7 @@ export const FiltersProvider = <TRowType,>({
         values,
         filteredValues,
         predicates,
+        filterExpression,
 
         addRule,
         clearRules,

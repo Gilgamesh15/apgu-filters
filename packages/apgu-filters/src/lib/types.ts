@@ -1,11 +1,7 @@
 import { ReactNode } from "react";
-
-declare module "apgu-filters";
-
 // ============================================================================
 // 1. LANGUAGE DEFINITION - What is a filter expression
 // ============================================================================
-
 export type FilterRule<
   TFieldKey extends string = string,
   TComparatorKey extends string = string,
@@ -15,53 +11,45 @@ export type FilterRule<
   comparator: TComparatorKey;
   value: TFilterValue;
 };
-
 export type FilterExpression = FilterRule[];
-
 // ============================================================================
 // 2. COMPARATOR DEFINITION - What is a comparator
 // ============================================================================
-
 /** Core comparator logic - the "blueprint" */
-export type Comparator<
-  TFieldType = any,
-  TFilterValue = any,
-  TComparatorExtraProps extends object = {
-    label: string;
-  }
-> = {
+export type Comparator<TFieldType = any, TFilterValue = any> = {
   id: string;
   evaluate: (args: {
     filterValue: TFilterValue;
     rowValue: TFieldType;
   }) => boolean;
-} & TComparatorExtraProps;
-
+  label?: string;
+  icon?: ReactNode;
+  description?: string;
+};
 // ============================================================================
 // 3. PREDICATE DEFINITION - What is a predicate
 // ============================================================================
-
 /** Predicate definition - the general "schema" for a type of field */
 export type PredicateDef<
   TFieldType = any,
   TFilterValue = any,
-  TComparatorExtraProps extends object = {
-    label: string;
-  },
-  TComparators extends Comparator<
+  // NOTE: We catch TComparators to then be able to call TComparators[number]["id"]
+  // instead of just string
+  TComparators extends readonly Comparator<
     TFieldType,
-    TFilterValue,
-    TComparatorExtraProps
-  >[] = Comparator<TFieldType, TFilterValue, TComparatorExtraProps>[]
+    TFilterValue
+  >[] = Comparator<TFieldType, TFilterValue>[]
 > = {
+  id: string;
   // Available comparators for this predicate type
   comparators: TComparators;
-
   // Default configuration
   defaultComparator: TComparators[number]["id"]; // ID of the default comparator
   defaultValue: TFilterValue;
+  label?: string;
+  icon?: ReactNode;
+  description?: string;
 };
-
 /**
  * Predicate instance - a configured predicate for a specific field
  * Contains field-specific information
@@ -69,31 +57,24 @@ export type PredicateDef<
 export type PredicateInstance<
   TFieldType = any,
   TFilterValue = any,
-  TComparatorExtraProps extends object = {
-    label: string;
-  },
-  TComparators extends Comparator<
+  TComparators extends readonly Comparator<
     TFieldType,
-    TFilterValue,
-    TComparatorExtraProps
-  >[] = Comparator<TFieldType, TFilterValue, TComparatorExtraProps>[],
-  TRestProps extends object = {}
+    TFilterValue
+  >[] = Comparator<TFieldType, TFilterValue>[]
 > = {
-  def: PredicateDef<
-    TFieldType,
-    TFilterValue,
-    TComparatorExtraProps,
-    TComparators
-  >;
-
+  def: PredicateDef<TFieldType, TFilterValue, TComparators>;
   // Field-specific configuration
   field: string;
-} & TRestProps;
-
+  label?: string;
+  icon?: ReactNode;
+  description?: string;
+};
+export type PredicateInstances<TRowType extends object = any> = {
+  [K in keyof TRowType]: PredicateInstance<TRowType[K], any, any>;
+}[keyof TRowType][];
 // ============================================================================
 // 4. COMPARATOR UTILS
 // ============================================================================
-
 export type Comparable = string | number | boolean | Date;
 export type Ordered = string | number | Date;
 export type StringLike = string;

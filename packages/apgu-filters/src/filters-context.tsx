@@ -1,10 +1,11 @@
 import React from "react";
-import { PredicateInstance } from "./lib/types";
+import { PredicateInstances, FilterExpression } from "./lib/types";
 
-export type FiltersContextType<TRowType = any> = {
+export type FiltersContextType<TRowType extends object = any> = {
   values: TRowType[];
   filteredValues: TRowType[];
-  predicates: PredicateInstance<TRowType>[];
+  predicates: PredicateInstances<TRowType>;
+  filterExpression: FilterExpression;
 
   addRule: (args: { field: string }) => void;
   clearRules: () => void;

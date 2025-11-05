@@ -5,17 +5,24 @@ import { createPredicate } from "../lib/utils";
 // String Predicates
 // ============================================================================
 
-export const StringPredicate = createPredicate<string, string | RegExp>({
+/**
+ * ! ISSUE:
+ * Typescript expects that all predicates share string | RegExp
+ * instead of being either a string or a RegExp
+ */
+
+export const StringPredicate = createPredicate({
+  id: "string",
   comparators: [
-    Comparators.Contains,
-    Comparators.NotContains,
-    Comparators.EndsWith,
-    Comparators.StartsWith,
+    Comparators.ContainsCaseInsensitive,
+    Comparators.NotContainsCaseInsensitive,
+    Comparators.EndsWithCaseInsensitive,
+    Comparators.NotEndsWithCaseInsensitive,
+    Comparators.StartsWithCaseInsensitive,
     Comparators.Equals,
-    Comparators.NotEquals,
-    Comparators.Matches
-  ],
-  defaultComparator: "contains",
+    Comparators.NotEquals
+  ] as const,
+  defaultComparator: "contains-case-insensitive",
   defaultValue: ""
 });
 
@@ -24,14 +31,15 @@ export const StringPredicate = createPredicate<string, string | RegExp>({
 // ============================================================================
 
 export const NumberPredicate = createPredicate<number, number>({
+  id: "number",
   comparators: [
     Comparators.Equals,
     Comparators.NotEquals,
     Comparators.GreaterThan,
-    Comparators.GreaterOrEqual,
+    Comparators.GreaterThanOrEqual,
     Comparators.LessThan,
-    Comparators.LessOrEqual
-  ],
+    Comparators.LessThanOrEqual
+  ] as const,
   defaultComparator: "equals",
   defaultValue: 0
 });
@@ -40,12 +48,13 @@ export const NumberRangePredicate = createPredicate<
   number,
   { min: number; max: number }
 >({
+  id: "number-range",
   comparators: [
-    Comparators.Between,
-    Comparators.BetweenExclusive,
-    Comparators.Outside
-  ],
-  defaultComparator: "between",
+    Comparators.InRangeInclusive,
+    Comparators.InRangeExclusive,
+    Comparators.NotInRangeInclusive
+  ] as const,
+  defaultComparator: "in-range-inclusive",
   defaultValue: { min: 0, max: 100 }
 });
 
@@ -54,14 +63,15 @@ export const NumberRangePredicate = createPredicate<
 // ============================================================================
 
 export const DatePredicate = createPredicate<Date, Date>({
+  id: "date",
   comparators: [
     Comparators.Equals,
     Comparators.NotEquals,
-    Comparators.IsBefore,
-    Comparators.IsAfter,
-    Comparators.IsOnOrBefore,
-    Comparators.IsOnOrAfter
-  ],
+    Comparators.LessThan,
+    Comparators.GreaterThan,
+    Comparators.LessThanOrEqual,
+    Comparators.GreaterThanOrEqual
+  ] as const,
   defaultComparator: "equals",
   defaultValue: new Date()
 });
@@ -70,12 +80,13 @@ export const DateRangePredicate = createPredicate<
   Date,
   { min: Date; max: Date }
 >({
+  id: "date-range",
   comparators: [
-    Comparators.Between,
-    Comparators.BetweenExclusive,
-    Comparators.Outside
-  ],
-  defaultComparator: "between",
+    Comparators.InRangeInclusive,
+    Comparators.InRangeExclusive,
+    Comparators.NotInRangeInclusive
+  ] as const,
+  defaultComparator: "in-range-inclusive",
   defaultValue: {
     min: new Date(),
     max: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
@@ -83,8 +94,9 @@ export const DateRangePredicate = createPredicate<
 });
 
 export const DateRelativePredicate = createPredicate<Date, Date | never>({
-  comparators: [Comparators.IsBefore, Comparators.IsAfter],
-  defaultComparator: "isToday",
+  id: "date-relative",
+  comparators: [Comparators.LessThan, Comparators.GreaterThan] as const,
+  defaultComparator: "less-than",
   defaultValue: new Date()
 });
 
@@ -93,7 +105,8 @@ export const DateRelativePredicate = createPredicate<Date, Date | never>({
 // ============================================================================
 
 export const BooleanPredicate = createPredicate<boolean, boolean>({
-  comparators: [Comparators.Equals, Comparators.NotEquals],
+  id: "boolean",
+  comparators: [Comparators.Equals, Comparators.NotEquals] as const,
   defaultComparator: "equals",
   defaultValue: true
 });
@@ -102,27 +115,29 @@ export const BooleanPredicate = createPredicate<boolean, boolean>({
 // Select Predicates (Single & Multi)
 // ============================================================================
 
-export const Select = createPredicate<
+export const SelectPredicate = createPredicate<
   string,
   string[],
   { options: { value: string; label: string }[] }
 >({
-  comparators: [Comparators.IsOneOf, Comparators.IsNoneOf],
-  defaultComparator: "isOneOf",
+  id: "select",
+  comparators: [Comparators.Includes, Comparators.NotIncludes] as const,
+  defaultComparator: "includes",
   defaultValue: []
 });
 
-export const MultiSelect = createPredicate<
+export const MultiSelectPredicate = createPredicate<
   string[],
   string[],
   { options: { value: string; label: string }[] }
 >({
+  id: "multi-select",
   comparators: [
-    Comparators.ArrayContainsAny,
-    Comparators.ArrayContainsAll,
-    Comparators.ArrayNotContainsAll,
-    Comparators.ArrayNotContainsAny
-  ],
-  defaultComparator: "containsAny",
+    Comparators.IncludesAny,
+    Comparators.IncludesAll,
+    Comparators.NotIncludesAll,
+    Comparators.NotIncludesAny
+  ] as const,
+  defaultComparator: "includes-any",
   defaultValue: []
 });
