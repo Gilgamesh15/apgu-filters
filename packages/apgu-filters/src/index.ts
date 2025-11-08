@@ -4,7 +4,8 @@ export { useFiltersContext } from "./hooks/use-filters-context";
 export { useFilteredValues } from "./hooks/use-filtered-values";
 
 // Utilities for creating predicates and comparators
-export { createPredicate } from "./lib/utils";
+export { Comparator } from "./lib/comparator";
+export { Predicate } from "./lib/predicate";
 
 // Types
 export type * from "./lib/types";

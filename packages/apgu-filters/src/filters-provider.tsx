@@ -1,6 +1,7 @@
 import React from "react";
 import { FiltersContext } from "./filters-context";
 import { FilterExpression, PredicateInstances } from "./lib/types";
+import { PredicateInstance } from "./lib/predicate";
 
 export interface FiltersProviderProps<TRowType extends object = any> {
   children: React.ReactNode;
@@ -26,8 +27,8 @@ export const FiltersProvider = <TRowType extends object = any>({
         ...prev,
         {
           field: args.field,
-          comparator: predicate.def.defaultComparator,
-          value: predicate.def.defaultValue
+          comparator: predicate.defaultComparatorId,
+          value: predicate.defaultValue
         }
       ]);
     }
@@ -56,8 +57,8 @@ export const FiltersProvider = <TRowType extends object = any>({
           i === index
             ? {
                 ...rule,
-                comparator: predicate.def.defaultComparator,
-                value: predicate.def.defaultValue
+                comparator: predicate.defaultComparatorId,
+                value: predicate.defaultValue
               }
             : rule
         )
@@ -107,17 +108,17 @@ export const FiltersProvider = <TRowType extends object = any>({
         const predicate = predicates.find((p) => p.field === rule.field);
         if (!predicate) return true;
 
-        const comparatorDef = predicate.def.comparators.find(
-          (c: any) => c.id === rule.comparator
+        const comparator = predicate.comparators.find(
+          (c) => c.id === rule.comparator
         );
 
-        if (!comparatorDef) return true;
+        if (!comparator) return true;
 
         const rowValue = row[rule.field as keyof TRowType];
 
-        return comparatorDef.evaluate({
-          filterValue: rule.value,
-          rowValue
+        return comparator.evaluate({
+          filter: rule.value,
+          value: rowValue
         });
       });
     });
