@@ -2,7 +2,7 @@ import React from "react";
 import { FiltersContext, FiltersContextType } from "../filters-context";
 
 export const useFiltersContext = <
-  TRowType extends object = any
+  TRowType extends Record<string, any> = Record<string, any>
 >(): FiltersContextType<TRowType> => {
   const context = React.useContext(FiltersContext);
   if (!context) {

@@ -1,31 +1,18 @@
-// ============================================================================
-// 1. LANGUAGE DEFINITION - What is a filter expression
+import { FilterRule } from "./filter-rules/filter-rule";
+import { BasePredicateMeta, PredicateInstance } from "./predicates";
 
-import { ReactNode } from "react";
-import { Predicate, PredicateInstance } from "./predicate";
+export type AssertExact<A, B> = [A] extends [B]
+  ? [B] extends [A]
+    ? true
+    : false
+  : false;
 
-// ============================================================================
-export type FilterRule<
-  TFieldKey extends string = string,
-  TComparatorKey extends string = string,
-  TFilterValue = any
-> = {
-  field: TFieldKey;
-  comparator: TComparatorKey;
-  value: TFilterValue;
-};
-export type FilterExpression = FilterRule[];
+export type BuildError<
+  TOnSuccess,
+  TAssertion extends string | true
+> = TAssertion extends true ? TOnSuccess : TAssertion;
 
-export type PredicateInstances<TRowType extends object = any> = {
-  [K in keyof TRowType]: PredicateInstance<
-    TRowType[K],
-    any,
-    any,
-    any,
-    any,
-    any
-  >;
-}[keyof TRowType][];
+export type FilterExpression = FilterRule<any, any, any>[];
 
 // ============================================================================
 // 4. COMPARATOR UTILS
@@ -35,37 +22,12 @@ export type Ordered = string | number | Date;
 export type StringLike = string;
 export type Numeric = number;
 
-export type RenderFn<TFilter, TMeta> = (arg: {
-  filterValue: TFilter;
-  onFilterValueChange: React.Dispatch<React.SetStateAction<TFilter>>;
-  meta: TMeta;
-}) => ReactNode;
-
-type ExtractFilterValue<T> = T extends Predicate<
-  any,
-  infer TFilter,
-  any,
-  any,
-  any,
-  any,
-  any
->
-  ? TFilter
-  : never;
-
-type ExtractMeta<T> = T extends Predicate<
-  any,
-  any,
-  infer ExpectedInstanceMeta,
-  infer TMeta,
-  any,
-  any,
-  any
->
-  ? TMeta & ExpectedInstanceMeta
-  : never;
-
-export type PredicateRenderer<
-  TPredicate extends Predicate<any, any, any, any, any, any, any>
-> = RenderFn<ExtractFilterValue<TPredicate>, ExtractMeta<TPredicate>>;
-
+export type PredicateInstances<T extends Record<string, any>> = {
+  [K in keyof T]: PredicateInstance<
+    T[K], // TValue - the type of the field
+    any, // TFilter
+    K & string, // TFieldId - the field name as string
+    BasePredicateMeta, // TMeta
+    string // TId
+  >;
+}[keyof T][];

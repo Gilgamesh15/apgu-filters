@@ -12,5 +12,12 @@
     "build:cli": "npm run build -w packages/cli",
     "dev:core": "npm run dev -w packages/apgu-filters",
     "dev:cli": "npm run dev -w packages/cli"
+  },
+  "dependencies": {
+    "lodash.merge": "^4.6.2"
+  },
+  "devDependencies": {
+    "@types/lodash.merge": "^4.6.9",
+    "@types/react": "^19.2.2"
   }
 }

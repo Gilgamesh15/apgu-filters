@@ -1,150 +1,170 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { FiltersContext } from "./filters-context";
 import { FilterExpression, PredicateInstances } from "./lib/types";
-import { PredicateInstance } from "./lib/predicate";
+import { ComparatorInstance } from "./lib/comparators";
+import { FilterRule } from "./lib/filter-rules/filter-rule";
 
-export interface FiltersProviderProps<TRowType extends object = any> {
+export interface FiltersProviderProps<
+  TRowType extends Record<string, any> = Record<string, any>
+> {
   children: React.ReactNode;
   values?: TRowType[];
   predicates: PredicateInstances<TRowType>;
   defaultFilterExpression?: FilterExpression;
 }
 
-export const FiltersProvider = <TRowType extends object = any>({
-  children,
+export const FiltersProvider = <
+  TRowType extends Record<string, any> = Record<string, any>
+>({
   values = [],
+  children,
   predicates,
   defaultFilterExpression = []
 }: FiltersProviderProps<TRowType>) => {
   const [filterExpression, setFilterExpression] =
     React.useState<FilterExpression>(defaultFilterExpression);
 
-  const addRule = (args: { field: string }) => {
-    const predicate = predicates.find((p) => p.field === args.field);
+  const addRuleByField = useCallback(
+    (field: keyof TRowType) => {
+      const predicate = predicates.find((p) => p.field === field);
+      if (!predicate) {
+        console.warn(`No predicate found for field: ${String(field)}`);
+        return;
+      }
 
-    if (predicate) {
       setFilterExpression((prev) => [
         ...prev,
-        {
-          field: args.field,
-          comparator: predicate.defaultComparatorId,
-          value: predicate.defaultValue
-        }
-      ]);
-    }
-  };
-  const clearRules = () => {
-    setFilterExpression([]);
-  };
-
-  const getRuleTarget = ({ index }: { index: number }) => {
-    const rule = filterExpression[index];
-    return rule ? rule.field : "";
-  };
-
-  const setRuleTarget = ({
-    index,
-    field
-  }: {
-    index: number;
-    field: string;
-  }) => {
-    const predicate = predicates.find((p) => p.field === field);
-
-    if (predicate) {
-      setFilterExpression((prev) =>
-        prev.map((rule, i) =>
-          i === index
-            ? {
-                ...rule,
-                comparator: predicate.defaultComparatorId,
-                value: predicate.defaultValue
-              }
-            : rule
+        new FilterRule(
+          field as string,
+          predicate.defaultComparatorId,
+          predicate.defaultValue
         )
+      ]);
+    },
+    [predicates]
+  );
+
+  const getRuleByIndex = useCallback(
+    (index: number): FilterRule<any, any, any> | null => {
+      return filterExpression[index] || null;
+    },
+    [filterExpression]
+  );
+
+  const getComparatorByRule = useCallback(
+    (
+      rule: FilterRule<any, any, any>
+    ): ComparatorInstance<any, any, string> | null => {
+      const predicate = predicates.find((p) => p.field === rule.field);
+      if (!predicate) return null;
+
+      const comparator = predicate.comparators.find(
+        (c) => c.id === rule.comparator
       );
-    }
-  };
+      return comparator || null;
+    },
+    [predicates]
+  );
 
-  const getRuleComparator = ({ index }: { index: number }) => {
-    const rule = filterExpression[index];
-    return rule ? rule.comparator : "";
-  };
-  const setRuleComparator = ({
-    index,
-    comparator
-  }: {
-    index: number;
-    comparator: string;
-  }) => {
-    setFilterExpression((prev) =>
-      prev.map((rule, i) => (i === index ? { ...rule, comparator } : rule))
-    );
-  };
+  const getPredicateByRule = useCallback(
+    (
+      rule: FilterRule<any, any, any>
+    ): PredicateInstances<TRowType>[number] | null => {
+      const predicate = predicates.find((p) => p.field === rule.field);
+      return predicate || null;
+    },
+    [predicates]
+  );
 
-  const getRuleValue = <TFilterType,>({ index }: { index: number }) => {
-    const rule = filterExpression[index];
-    return rule.value as TFilterType;
-  };
-  const setRuleValue = <TFilterType,>({
-    index,
-    value
-  }: {
-    index: number;
-    value: TFilterType;
-  }) => {
-    setFilterExpression((prev) =>
-      prev.map((rule, i) => (i === index ? { ...rule, value } : rule))
-    );
-  };
+  const setComparatorByRule = useCallback(
+    (rule: FilterRule<any, any, any>, comparatorId: string) => {
+      setFilterExpression((prev) => {
+        const newExpression = [...prev];
+        const ruleIndex = newExpression.indexOf(rule);
+        if (ruleIndex !== -1) {
+          newExpression[ruleIndex].comparator = comparatorId;
+        }
+        return newExpression;
+      });
+    },
+    []
+  );
 
-  const removeRule = ({ index }: { index: number }) => {
-    setFilterExpression((prev) => prev.filter((_, i) => i !== index));
-  };
+  const removeRuleByIndex = useCallback((index: number) => {
+    setFilterExpression((prev) => {
+      const newExpression = [...prev];
+      newExpression.splice(index, 1);
+      return newExpression;
+    });
+  }, []);
+
+  const setRuleField = useCallback(
+    (rule: FilterRule<any, any, any>, newField: keyof TRowType) => {
+      setFilterExpression((prev) =>
+        prev.map((r) => {
+          if (r.field !== rule.field) return r;
+
+          const predicate = predicates.find((p) => p.field === newField);
+          if (!predicate) {
+            console.warn(`No predicate found for field: ${String(newField)}`);
+            return r;
+          }
+          return new FilterRule(
+            newField as string,
+            predicate.defaultComparatorId,
+            predicate.defaultValue
+          );
+        })
+      );
+    },
+    [predicates]
+  );
+
+  const setRuleValue = useCallback(
+    (rule: FilterRule<any, any, any>, value: any) => {
+      setFilterExpression((prev) => {
+        const newExpression = [...prev];
+        const ruleIndex = newExpression.indexOf(rule);
+        if (ruleIndex !== -1) {
+          newExpression[ruleIndex].value = value;
+        }
+        return newExpression;
+      });
+    },
+    []
+  );
 
   const filteredValues = React.useMemo(() => {
-    return values.filter((row) => {
+    return values.filter((item) => {
       return filterExpression.every((rule) => {
-        const predicate = predicates.find((p) => p.field === rule.field);
-        if (!predicate) return true;
+        const predicate = getPredicateByRule(rule);
+        const comparator = getComparatorByRule(rule);
+        if (!predicate || !comparator) return true;
 
-        const comparator = predicate.comparators.find(
-          (c) => c.id === rule.comparator
-        );
-
-        if (!comparator) return true;
-
-        const rowValue = row[rule.field as keyof TRowType];
-
+        const itemValue = item[rule.field];
         return comparator.evaluate({
           filter: rule.value,
-          value: rowValue
+          value: itemValue
         });
       });
     });
-  }, [values, filterExpression, predicates]);
+  }, [values, filterExpression, getPredicateByRule, getComparatorByRule]);
 
   return (
     <FiltersContext.Provider
       value={{
-        values,
-        filteredValues,
-        predicates,
         filterExpression,
-
-        addRule,
-        clearRules,
-
-        getRuleTarget,
-        setRuleTarget,
-
-        getRuleComparator,
-        setRuleComparator,
-
-        getRuleValue,
+        predicates,
+        addRuleByField,
+        removeRuleByIndex,
+        getRuleByIndex,
+        getComparatorByRule,
+        getPredicateByRule,
+        setComparatorByRule,
+        setRuleField,
         setRuleValue,
-
-        removeRule
+        values,
+        filteredValues
       }}
     >
       {children}
